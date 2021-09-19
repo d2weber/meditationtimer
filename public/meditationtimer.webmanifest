@@ -1,0 +1,22 @@
+{
+  "name": "Meditime",
+  "short_name": "Meditime",
+  "start_url": "../../",
+  "scope": "../../",
+  "display": "fullscreen",
+  "background_color": "#fff",
+  "description": "A timer for meditating",
+  "icons": [
+    {
+      "src": "icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-616.png",
+      "sizes": "616x616",
+      "type": "image/png"
+    }
+  ]
+}
+
