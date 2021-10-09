@@ -124,7 +124,10 @@ fn edited_timer() -> &'static Mutable<Option<String>> {
 }
 
 fn save_edited_timer() {
-    let timer = selected_timer().take().unwrap();
+    let timer = match selected_timer().take() {
+        Some(t) => t,
+        None => return,
+    };
     let mut new_timer = Duration::from_secs(timer.inner.seconds);
     if let Some(new_part) = edited_timer().take().and_then(|d| d.parse::<u32>().ok()) {
         match &timer.selected {
