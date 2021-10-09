@@ -46,6 +46,7 @@ fn new_timer() -> impl Element {
         .s(RoundedCorners::all(3))
         .s(Padding::all(10))
         .s(Font::new().center())
+        .update_raw_el(|e| e.attr("type", "number"))
         .label_hidden("Add new interval")
         .on_change(|t| super::new_timer().set(t))
         .on_key_down(|event| event.if_key(Key::Enter, || super::add_timer()))
@@ -112,8 +113,9 @@ fn duration_edit() -> impl Element {
     Column::new().item(
         TextInput::new()
             .s(Height::new(23))
-            .s(Width::new(23))
+            .s(Width::new(40))
             .s(Font::new().size(20).center())
+            .update_raw_el(|e| e.attr("type", "number"))
             .label_hidden("selected duration")
             .focused()
             .on_blur(super::save_edited_timer)
