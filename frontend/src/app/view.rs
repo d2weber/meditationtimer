@@ -10,8 +10,8 @@ pub fn root() -> impl Element {
         .item(
             Column::new()
                 .s(Align::center())
-                .s(Width::new(200))
-                .s(Spacing::new(10))
+                .s(Width::exact(200))
+                .s(Gap::both(10))
                 .s(Font::new().size(20).center())
                 .items_signal_vec(super::timers().signal_vec_cloned().map(timer))
                 .item(new_timer())
@@ -23,7 +23,7 @@ pub fn root() -> impl Element {
         )
         .item(
             Link::new()
-                .s(Font::new().size(10).color(hsl(0, 0, 40)))
+                .s(Font::new().size(10).color(hsluv!(0, 0, 40)))
                 .label("Background vector created by rawpixel.com - www.freepik.com")
                 .to("https://www.freepik.com/vectors/background"),
         )
@@ -49,7 +49,7 @@ fn new_timer() -> impl Element {
         .update_raw_el(|e| e.attr("type", "number"))
         .label_hidden("Add new interval")
         .on_change(|t| super::new_timer().set(t))
-        .on_key_down(|event| event.if_key(Key::Enter, || super::add_timer()))
+        .on_key_down_event(|event| event.if_key(Key::Enter, || super::add_timer()))
         .placeholder(Placeholder::new("Add new interval"))
         .text_signal(super::new_timer().signal_cloned())
 }
@@ -66,7 +66,10 @@ fn timer(duration: Arc<Duration>) -> impl Element {
             super::running_timer()
                 .signal_cloned()
                 .map(clone!((duration) move |t| super::same_as(&t, &duration)))
-                .map_bool(move || hsla(65, 29, 86, 70), move || hsla(39, 90, 60, 90)),
+                .map_bool(
+                    move || hsluv!(65, 29, 86, 70),
+                    move || hsluv!(39, 90, 60, 90),
+                ),
         ))
         .s(Padding::all(10))
         .s(RoundedCorners::all(3))
@@ -112,15 +115,15 @@ fn duration_edit() -> impl Element {
         .map(Option::unwrap_throw);
     Column::new().item(
         TextInput::new()
-            .s(Height::new(23))
-            .s(Width::new(40))
+            .s(Height::exact(23))
+            .s(Width::exact(40))
             .s(Font::new().size(20).center())
             .update_raw_el(|e| e.attr("type", "number"))
             .label_hidden("selected duration")
-            .focused()
+            .focus(true)
             .on_blur(super::save_edited_timer)
             .on_change(move |text| super::edited_timer().set_neq(Some(text)))
-            .on_key_down(|event| match event.key() {
+            .on_key_down_event(|event| match event.key() {
                 Key::Escape => super::selected_timer().set(None),
                 Key::Enter => super::save_edited_timer(),
                 _ => (),
@@ -143,28 +146,23 @@ fn colon_centered_row<L: Element, R: Element>(left: L, right: R) -> impl Element
 
 fn remove_duration_button(duration: Arc<Duration>) -> impl Element {
     Button::new()
-        .s(Width::new(30))
-        .s(Height::new(30))
+        .s(Width::exact(30))
+        .s(Height::exact(30))
         .s(Transform::new().move_left(30).move_down(5))
         .s(Font::new().size(25))
-        .on_press(move || super::remove_timer(duration))
+        .on_press(move || super::remove_timer(duration.clone()))
         .label("×")
 }
 
 fn start_button(on_press: fn()) -> impl Element {
-    button("Start", NamedColor::Green2, NamedColor::Green5, on_press)
+    button("Start", hsluv!(52.1, 53.6, 90.3), hsluv!(149.9, 98.5, 66.8), on_press)
 }
 
 fn stop_button(on_press: fn()) -> impl Element {
-    button("Stop", NamedColor::Red2, NamedColor::Red5, on_press)
+    button("Stop", hsluv!(12.2, 97.2, 85.8), hsluv!(12.2, 80.7, 55), on_press)
 }
 
-fn button(
-    label: &str,
-    bg_color: NamedColor,
-    bg_color_hovered: NamedColor,
-    on_press: fn(),
-) -> impl Element {
+fn button(label: &str, bg_color: HSLuv, bg_color_hovered: HSLuv, on_press: fn()) -> impl Element {
     let (hovered, hovered_signal) = Mutable::new_and_signal(false);
     Button::new()
         .s(Padding::all(6))
