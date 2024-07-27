@@ -1,4 +1,3 @@
-use moon::actix_files::NamedFile;
 use moon::*;
 
 async fn frontend() -> Frontend {
@@ -17,7 +16,7 @@ async fn frontend() -> Frontend {
 
         <script>
             if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.register('sw.js', {}).then(function(reg) {
+              navigator.serviceWorker.register('_api/public/sw.js', {}).then(function(reg) {
 
                 if(reg.installing) {
                   console.log('Service worker installing');
@@ -40,8 +39,5 @@ async fn up_msg_handler(_: UpMsgRequest<()>) {}
 
 #[moon::main]
 async fn main() -> std::io::Result<()> {
-    start(frontend, up_msg_handler, |cfg| {
-        cfg.service(NamedFile::open("sw.js").unwrap());
-    })
-    .await
+    start(frontend, up_msg_handler, |_| {}).await
 }
