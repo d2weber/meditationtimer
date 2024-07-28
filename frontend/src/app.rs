@@ -38,8 +38,12 @@ fn play_silence_1s() {
 // -- timer --
 #[static_ref]
 fn timers() -> &'static MutableVec<Arc<Duration>> {
+    let default_timers = vec![5 * 60, 15 * 60];
     let mutable = MutableVec::new_with_values(
-        vec![5*60, 15*60]
+        local_storage()
+            .get("timers")
+            .unwrap_or(Ok(default_timers.clone()))
+            .unwrap_or(default_timers)
             .into_iter()
             .map(|seconds| Arc::new(Duration::from_secs(seconds)))
             .collect(),
@@ -140,16 +144,17 @@ fn save_edited_timer() {
             .position(|t| same_as(&Some(timer.inner.clone()), t))
             .unwrap();
         timers.set_cloned(idx, Arc::new(new_timer));
+        save_local_storage(timers);
     }
 }
 
 fn add_timer() {
     let mut new_timer = new_timer().lock_mut();
     if let Ok(duration) = new_timer.parse::<u32>() {
-        timers()
-            .lock_mut()
-            .push_cloned(Arc::new(Duration::from_secs(duration)));
+        let mut timers = timers().lock_mut();
+        timers.push_cloned(Arc::new(Duration::from_secs(duration)));
         new_timer.clear();
+        save_local_storage(timers);
     } else {
         console::log("Parsing failed");
     }
@@ -163,6 +168,7 @@ fn remove_timer(duration: Arc<Duration>) {
         .position(move |t| same_as(&duration, t))
         .unwrap();
     timers.remove(idx);
+    save_local_storage(timers);
 }
 
 fn clk_running() -> impl Signal<Item = bool> {
@@ -226,4 +232,13 @@ fn get_next_timer() -> Option<Arc<Duration>> {
 
 fn stop_clk() {
     clk().take();
+}
+
+fn save_local_storage(timers: MutableVecLockMut<Arc<Duration>>) {
+    local_storage()
+        .insert(
+            "timers",
+            &timers.iter().map(|t| t.seconds).collect::<Vec<u32>>(),
+        )
+        .unwrap();
 }
