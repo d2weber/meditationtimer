@@ -53,13 +53,13 @@ fn timers() -> &'static MutableVec<Arc<Duration>> {
         match change {
             VecDiff::InsertAt { .. } | VecDiff::Move { .. } | VecDiff::Push { .. } => {}
             VecDiff::Replace { values } => {
-                if !values.iter().any(|v| is_running_timer(v)) {
+                if !values.iter().any(is_running_timer) {
                     running_timer().take();
                     clk().take();
                 }
             }
             VecDiff::UpdateAt { .. } | VecDiff::RemoveAt { .. } | VecDiff::Pop {} => {
-                if !timers().lock_ref().iter().any(|v| is_running_timer(v)) {
+                if !timers().lock_ref().iter().any(is_running_timer) {
                     running_timer().take();
                     clk().take();
                 }
@@ -86,7 +86,7 @@ fn running_timer() -> &'static Mutable<Option<Arc<Duration>>> {
         if timer.is_none() {
             clk().set(None);
         }
-        remaining().set(timer.and_then(|t| Some(*t)));
+        remaining().set(timer.map(|t| *t));
         async {}
     }));
     mutable
@@ -215,7 +215,7 @@ fn same_as(reference: &Option<Arc<Duration>>, other: &Arc<Duration>) -> bool {
     //todo: Remove Option
     reference
         .as_ref()
-        .map_or(false, |r| ptr::eq(Arc::as_ptr(&r), Arc::as_ptr(other)))
+        .map_or(false, |r| ptr::eq(Arc::as_ptr(r), Arc::as_ptr(other)))
 }
 
 fn get_next_timer() -> Option<Arc<Duration>> {

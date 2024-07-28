@@ -49,7 +49,7 @@ fn new_timer() -> impl Element {
         .update_raw_el(|e| e.attr("type", "number"))
         .label_hidden("Add new interval")
         .on_change(|t| super::new_timer().set(t))
-        .on_key_down_event(|event| event.if_key(Key::Enter, || super::add_timer()))
+        .on_key_down_event(|event| event.if_key(Key::Enter, super::add_timer))
         .placeholder(Placeholder::new("Add new interval"))
         .text_signal(super::new_timer().signal_cloned())
 }
