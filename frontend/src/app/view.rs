@@ -155,19 +155,24 @@ fn remove_duration_button(duration: Arc<Duration>) -> impl Element {
 }
 
 fn start_button(on_press: fn()) -> impl Element {
-    button("Start", hsluv!(52.1, 53.6, 90.3), hsluv!(149.9, 98.5, 66.8), on_press)
+    button("Start", "darkgreen", "green", on_press)
 }
 
 fn stop_button(on_press: fn()) -> impl Element {
-    button("Stop", hsluv!(12.2, 97.2, 85.8), hsluv!(12.2, 80.7, 55), on_press)
+    button("Stop", "darkred", "firebrick", on_press)
 }
 
-fn button(label: &str, bg_color: HSLuv, bg_color_hovered: HSLuv, on_press: fn()) -> impl Element {
+fn button(
+    label: &str,
+    bg_color: &'static str,
+    bg_color_hovered: &'static str,
+    on_press: fn(),
+) -> impl Element {
     let (hovered, hovered_signal) = Mutable::new_and_signal(false);
     Button::new()
         .s(Padding::all(6))
         .s(Background::new()
-            .color_signal(hovered_signal.map_bool(move || bg_color_hovered, move || bg_color)))
+            .color_signal(hovered_signal.map_bool(move || bg_color, move || bg_color_hovered)))
         .on_hovered_change(move |is_hovered| hovered.set(is_hovered))
         .label(label)
         .on_press(on_press)
